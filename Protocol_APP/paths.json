@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@models": [
+        "core/models/index.ts"
+      ],
+      "@viewModels": [
+        "core/viewModels/index.ts"
+      ],
+      "@stores": [
+        "core/stores/index.ts"
+      ],
+      "@components": [
+        "components/index.ts"
+      ],
+      "@layout": [
+        "layout/index.ts"
+      ],
+      "@shared": [
+        "shared/index.ts"
+      ],
+      "@api": [
+        "api/index.ts"
+      ]
+    }
+  }
+}
