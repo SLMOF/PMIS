@@ -9,20 +9,28 @@ namespace Protocol_API.Controllers
     public class VisitorController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public VisitorController(AppDbContext context)
+        private readonly JwtResolver _jwtResolver;
+
+        public VisitorController(AppDbContext context, JwtResolver jwtResolver)
         {
             _context = context;
+            _jwtResolver = jwtResolver; 
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Visitor>>> GetVisitors(RequestParams requestParams)
         {
-            var query = await _context.Visitors
-                .AsNoTracking()
+            var query = _context.Visitors
                 .Include(d=>d.Department)
-                .PaginateAsync(requestParams, HttpContext.RequestAborted);
+                .AsNoTracking()
+                .AsQueryable();
 
-            return Ok(query);
+            if(_jwtResolver.GetUserRoleName() == "Admin")
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            var result = await query.PaginateAsync(requestParams, HttpContext.RequestAborted);
+            return Ok(result);
         }
 
         [HttpGet("{Id}")]
@@ -55,6 +63,7 @@ namespace Protocol_API.Controllers
                 Purpose = visitor.Purpose,
                 Phone = visitor.Phone,  
                 Remarks = visitor.Remarks, 
+                VisitorDate = visitor.VisitorDate,
                 Gender = visitor.Gender,
                 NationalId = visitor.NationalId,
                 PersonAccompanying = visitor.PersonAccompanying,
@@ -68,7 +77,7 @@ namespace Protocol_API.Controllers
         [HttpPut("{Id}")]
         public async Task<ActionResult> UpdateVisitor(int Id, Visitor visitor)
         {
-            var updatingVisotor = await _context.Visitors.AsNoTracking().FirstOrDefaultAsync(v => v.Id == Id);
+            var updatingVisotor = await _context.Visitors.FirstOrDefaultAsync(v => v.Id == Id);
 
             if (updatingVisotor != null)
             {
@@ -88,10 +97,10 @@ namespace Protocol_API.Controllers
 
                 await _context.SaveChangesAsync();  
             }
-            return Ok(updatingVisotor);
+            return Ok();
         }
 
-        [HttpPut("{Id}")]
+        [HttpPut("delete/{Id}")]
         public async Task<ActionResult> DeleteVisitorVisitor(int Id)
         {
             var deletingVisitor = await _context.Visitors.AsNoTracking().FirstOrDefaultAsync(v => v.Id == Id);

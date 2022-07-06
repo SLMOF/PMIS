@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Protocol_API.Migrations
 {
-    public partial class initial : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Department",
+                name: "Departments",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -23,7 +23,7 @@ namespace Protocol_API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Department", x => x.Id);
+                    table.PrimaryKey("PK_Departments", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -54,12 +54,16 @@ namespace Protocol_API.Migrations
                     From = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NationalId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    VisitType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExpectedDuration = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MeetingOffice = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PersonAccompanying = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Purpose = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VisitType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExpectedDuration = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MeetingOffice = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PersonAccompanying = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Purpose = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Remarks = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VisitorCard = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    VisitorDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ImageURL = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DepartmentId = table.Column<int>(type: "int", nullable: true),
                     DepartmentId1 = table.Column<long>(type: "bigint", nullable: true),
@@ -71,9 +75,9 @@ namespace Protocol_API.Migrations
                 {
                     table.PrimaryKey("PK_Visitors", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Visitors_Department_DepartmentId1",
+                        name: "FK_Visitors_Departments_DepartmentId1",
                         column: x => x.DepartmentId1,
-                        principalTable: "Department",
+                        principalTable: "Departments",
                         principalColumn: "Id");
                 });
 
@@ -88,8 +92,7 @@ namespace Protocol_API.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    RoleId = table.Column<int>(type: "int", nullable: true),
-                    RoleId1 = table.Column<long>(type: "bigint", nullable: true),
+                    RoleId = table.Column<long>(type: "bigint", nullable: false),
                     CreatedById = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false)
@@ -98,16 +101,17 @@ namespace Protocol_API.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_Roles_RoleId1",
-                        column: x => x.RoleId1,
+                        name: "FK_Users_Roles_RoleId",
+                        column: x => x.RoleId,
                         principalTable: "Roles",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_RoleId1",
+                name: "IX_Users_RoleId",
                 table: "Users",
-                column: "RoleId1");
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Visitors_DepartmentId1",
@@ -127,7 +131,7 @@ namespace Protocol_API.Migrations
                 name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Department");
+                name: "Departments");
         }
     }
 }

@@ -37,8 +37,8 @@ const Login = () => {
         var res = await httpService(ENDPIONTS.login).post(obj);
         if (res?.status === 200) {
             localStorage.setItem('token', JSON.stringify(res.data.token))
-            localStorage.setItem('sys_user', JSON.stringify(res.data.sys_user))
-
+            console.log("here is token", res.data.token)
+            // localStorage.setItem('sys_user', JSON.stringify(res.data.sys_user))
             //window.location.assign('/');
             e.target.reset();
             setIsLoading(false);

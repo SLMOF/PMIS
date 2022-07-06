@@ -1,5 +1,9 @@
 ﻿
 
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+
 namespace Protocol_API.Controllers
 {
     [Route("api/[controller]")]
@@ -8,27 +12,29 @@ namespace Protocol_API.Controllers
     {
         private IConfiguration _config;
         private readonly AppDbContext _context;
-        public LoginController(IConfiguration config, AppDbContext context)
+        private User? _user;
+        public LoginController( AppDbContext context, IConfiguration config)
         {
-            _config = config;
             _context = context;
+            _config = config;   
         }
 
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginDTOs userLogin)
         {
+            if (userLogin == null)
+            {
+                return BadRequest("Object sent from client is null");
+            }
             try
             {
-                var user = Authenticate(userLogin);
-
-
-                if (user != null)
+                
+                if (!await Authenticate(userLogin))
                 {
-                    string token = Generate(user);
-                    return Ok(new { token = token });
+                    return Unauthorized();
                 }
-                return BadRequest("Incorrect UserName or Password!");
+                return Ok(new { Token = CreateToken() });
             }
             catch (Exception ex)
             {
@@ -37,43 +43,80 @@ namespace Protocol_API.Controllers
             }
         }
 
-        private string Generate(User user)
+        private string CreateToken()
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var signingCredentials = GetSigningCredentials();
 
-            var claims = new[]
-            {
-                new Claim("userName", user.UserName),
-                new Claim("email", user.Email),
-                new Claim("fullName", user.FullName),
-                new Claim("roleId", user.RoleId.ToString()),
-                new Claim("Id", user.Id.ToString()),
-            };
+            var claims = GetClaims();
 
-            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
-               _config["Jwt:Audience"],
-               claims,
-               expires: DateTime.Now.AddMinutes(60),
-               signingCredentials: credentials);
+            var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
         }
 
-        public User Authenticate(LoginDTOs userLogin)
+        private SigningCredentials GetSigningCredentials()
         {
-            var currentUser = _context.Users.FirstOrDefault(o => o.UserName.ToLower() ==
-            userLogin.UserName.ToLower());
-            if (currentUser != null)
+            var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
+
+            var secret = new SymmetricSecurityKey(key);
+
+            return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
+        }
+
+        private List<Claim> GetClaims()
+        {
+            if (_user == null)
             {
-                bool isValidPassword = BCrypt.Net.BCrypt.Verify(userLogin.Password, currentUser.Password);
+                return new List<Claim>();
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, _user.UserName),
+                new Claim("Id", _user.Id.ToString()),
+                new Claim("fullName", _user.FullName),
+                new Claim("email", _user.Email),
+                new Claim("username", _user.UserName),
+                new Claim("roleName", _user.Role.Name),
+            };
+
+            return claims;
+        }
+
+        private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
+        {
+            //var tokenOptions = new JwtSecurityToken(
+            //    issuer: _config["Jwt:Issuer"],
+            //    audience: _config["Jwt:Audience"],
+            //    claims: claims,
+            //    expires: DateTime.Now.AddHours(9),
+            //    signingCredentials: signingCredentials);
+
+            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+             _config["Jwt:Audience"],
+             claims,
+             expires: DateTime.Now.AddMinutes(60),
+             signingCredentials: signingCredentials);
+
+            return token;
+        }
+    
+
+        public async Task<bool> Authenticate(LoginDTOs userLogin)
+        {
+            _user = _context.Users.IgnoreQueryFilters().Include(r=>r.Role).FirstOrDefault(o => o.UserName.ToLower() ==
+            userLogin.UserName.ToLower());
+
+            if (_user != null)
+            {
+                bool isValidPassword = BCrypt.Net.BCrypt.Verify(userLogin.Password, _user.Password);
                 if (isValidPassword)
                 {
-                    return currentUser;
+                    return true;
                 }
             }
 
-            return null;
+            return false;
         }
     }
 }

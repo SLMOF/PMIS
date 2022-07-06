@@ -12,8 +12,8 @@ using Protocol_API.DATA;
 namespace Protocol_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220621074958_initial")]
-    partial class initial
+    [Migration("20220704133655_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -50,7 +50,7 @@ namespace Protocol_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Department");
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("Protocol_API.Entities.Role", b =>
@@ -116,10 +116,7 @@ namespace Protocol_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<long?>("RoleId1")
+                    b.Property<long>("RoleId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -131,7 +128,7 @@ namespace Protocol_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoleId1");
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
                 });
@@ -157,7 +154,6 @@ namespace Protocol_API.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("ExpectedDuration")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("From")
@@ -165,6 +161,9 @@ namespace Protocol_API.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Host")
@@ -178,26 +177,32 @@ namespace Protocol_API.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("MeetingOffice")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NationalId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PersonAccompanying")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Purpose")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Remarks")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VisitType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("VisitorCard")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("VisitorDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -210,7 +215,9 @@ namespace Protocol_API.Migrations
                 {
                     b.HasOne("Protocol_API.Entities.Role", "Role")
                         .WithMany()
-                        .HasForeignKey("RoleId1");
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Role");
                 });

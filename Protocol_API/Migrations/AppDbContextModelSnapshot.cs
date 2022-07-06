@@ -114,10 +114,7 @@ namespace Protocol_API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<long?>("RoleId1")
+                    b.Property<long>("RoleId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -129,7 +126,7 @@ namespace Protocol_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoleId1");
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
                 });
@@ -216,7 +213,9 @@ namespace Protocol_API.Migrations
                 {
                     b.HasOne("Protocol_API.Entities.Role", "Role")
                         .WithMany()
-                        .HasForeignKey("RoleId1");
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Role");
                 });

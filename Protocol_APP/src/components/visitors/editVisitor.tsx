@@ -3,7 +3,6 @@ import { VisitorsModel } from '@models';
 import { VisitorsViewModel } from '@viewModels';
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form';
-import { Navigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 const fieldset = {
@@ -12,60 +11,64 @@ const fieldset = {
 const legend = {
     backgroundColor: "#0E1726", color: "white"
 }
+
 interface Props {
-    owner?: VisitorsModel;
-    callback?: () => void
+    visitor: VisitorsModel;
+    callback?: () => Promise<void>;
 }
 
-const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
-
+const EditVisitor: React.FC<Props> = ({ visitor, callback }) => {
+    console.log("editing Visitor data", visitor);
+    const [visitors, setVisitors] = useState<VisitorsModel>();
     const { register, handleSubmit, errors } = useForm();
     const [isLoading, setIsLoading] = useState(false);
-    // const [visitors, setVisitors] = useState<VisitorsModel[]>([]);
 
-    const onSubmit = async (data: any, e: any) => {
-        console.log("data s here ", data);
-        var visitor = new VisitorsViewModel();
-        visitor.fullName = data.fullName;
-        visitor.host = data.host;
-        visitor.phone = data.phone;
-        visitor.purpose = data.Purpose;
-        visitor.gender = data.gender;
-        visitor.visitorDate = new Date().toISOString();
-        visitor.from = data.from;
-        visitor.nationalId = data.nationalId;
-        visitor.visitType = data.VisitType
-        visitor.expectedDuration = data.ExpectedDuration;
-        visitor.meetingOffice = data.MeetingOffice;
-        visitor.personAccompanying = data.PersonAccompanying;
-        visitor.remarks = data.Remarks;
-        visitor.visitorCard = data.VisitorCard;
+    const OnEdit = async (data: VisitorsModel, e: any) => {
+        e.preventDefault();
+        setIsLoading(true);
 
-        var res = await httpService(ENDPIONTS.Visitors).post(visitor);
+        var visitorData = new VisitorsModel();
+        visitorData.fullName = data.fullName;
+        visitorData.host = data.host;
+        visitorData.phone = data.phone;
+        visitorData.purpose = data.purpose;
+        visitorData.gender = data.gender;
+        visitorData.visitorDate = data.visitorDate;
+        visitorData.from = data.from;
+        visitorData.nationalId = data.nationalId;
+        visitorData.visitType = data.visitType
+        visitorData.expectedDuration = data.expectedDuration;
+        visitorData.meetingOffice = data.meetingOffice;
+        visitorData.personAccompanying = data.personAccompanying;
+        visitorData.remarks = data.remarks;
+        visitorData.visitorCard = data.visitorCard;
+
+        console.log("editing data", visitorData)
+        console.log("editing data", visitor.id)
+        const res = await httpService(ENDPIONTS.Visitors).update(
+            visitor.id,
+            visitorData
+        );
+        console.log("error accured", res);
         if (res.request.status === 200) {
-            Swal.fire("✅", "SuccessFully Created .", "success");
+            Swal.fire("✅", "SuccessFully Updated .", "success");
             callback?.();
-            setIsLoading(false);
-            e.target.reset();
-            window.location.assign('/visitor/list');
-            return <Navigate to={`/visitor/list`} />;
         }
-        return;
+        setIsLoading(false);
     }
-
     return (
         <>
             <div className="container card mt-3">
                 <div className="card-body">
-                    <div className="">
+                    <div className="pb-2">
                         <h5 className="card-title  fs-4  p-2 d-flex justify-content-center">
-                            Add Visitor
+                            Edit Visitor
                         </h5>
                         <hr />
                     </div>
                     <form
                         // className="row g-3 p-2 d-flex justify-content-center"
-                        onSubmit={handleSubmit(onSubmit)}
+                        onSubmit={handleSubmit(OnEdit)}
                         noValidate
                     >
                         <fieldset className="row" style={fieldset}>
@@ -76,6 +79,7 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                     Full Name
                                 </label>
                                 <input
+                                    defaultValue={visitor?.fullName}
                                     type="text"
                                     name="fullName"
                                     id="fullName"
@@ -93,6 +97,7 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                 </label>
                                 <input
                                     type="phone"
+                                    defaultValue={visitor?.phone}
                                     name="phone"
                                     id="phone"
                                     className="form-control"
@@ -108,13 +113,14 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                     Gender
                                 </label>
                                 {/* <input
-                  type="text"
-                  name="gender"
-                  id="gender"
-                  className="form-control"
-                  ref={register({ required: true })}
-                /> */}
+              type="text"
+              name="gender"
+              id="gender"
+              className="form-control"
+              ref={register({ required: true })}
+            /> */}
                                 <select
+                                    defaultValue={visitor?.gender}
                                     name="gender"
                                     id="gender"
                                     className="form-control"
@@ -134,6 +140,7 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                 </label>
                                 <input
                                     type="text"
+                                    defaultValue={visitor?.nationalId}
                                     name="nationalId"
                                     ref={register()}
                                     className="form-control"
@@ -156,13 +163,14 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                 </label>
                                 <input
                                     type="Date"
-                                    name="VisitorDate"
-                                    id="VisitorDate"
+                                    // defaultValue={visitor?.visitorDate.toLocaleDateString('en-CA')}
+                                    name="visitorDate"
+                                    id="visitorDate"
                                     className="form-control"
                                     ref={register({ required: true })}
                                 />
                                 <span className="text-danger">
-                                    {errors.VisitorDate && <span>This field is required.</span>}
+                                    {errors.visitorDate && <span>This field is required.</span>}
                                 </span>
                             </div>
                             <div className="col-4 mb-3">
@@ -171,6 +179,7 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                     Visit Host
                                 </label>
                                 <input
+                                    defaultValue={visitor?.host}
                                     type="text"
                                     name="host"
                                     id="host"
@@ -187,6 +196,7 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                     From
                                 </label>
                                 <input
+                                    defaultValue={visitor?.from}
                                     type="text"
                                     name="from"
                                     id="from"
@@ -202,8 +212,9 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                     Meeting Office
                                 </label>
                                 <input
+                                    defaultValue={visitor?.meetingOffice}
                                     type="Text"
-                                    name="MeetingOffice"
+                                    name="meetingOffice"
                                     id="MeetingOffice"
                                     className="form-control"
                                     ref={register()}
@@ -214,11 +225,12 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                     Expected Duration
                                 </label>
                                 <input
+                                    defaultValue={visitor?.expectedDuration}
                                     type="text"
-                                    name="ExpectedDuration"
+                                    name="expectedDuration"
                                     ref={register()}
                                     className="form-control"
-                                    id="ExpectedDuration"
+                                    id="expectedDuration"
                                 />
                             </div>
                             <div className="col-4 mb-3">
@@ -227,9 +239,10 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                     Person Accompanying
                                 </label>
                                 <input
+                                    defaultValue={visitor?.personAccompanying}
                                     type="number"
-                                    name="PersonAccompanying"
-                                    id="PersonAccompanying"
+                                    name="personAccompanying"
+                                    id="personAccompanying"
                                     className="form-control"
                                     ref={register()}
                                 />
@@ -240,9 +253,10 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                     Visitor Card
                                 </label>
                                 <input
+                                    defaultValue={visitor?.visitorCard}
                                     type="text"
-                                    name="VisitorCard"
-                                    id="VisitorCard"
+                                    name="visitorCard"
+                                    id="visitorCard"
                                     className="form-control"
                                     ref={register()}
                                 />
@@ -251,20 +265,21 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                             <div className="col-4 mb-3">
                                 <label className="form-label">Visit Type</label>
                                 <select
+                                    defaultValue={visitor?.visitType}
                                     className="form-control"
-                                    name="VisitType"
-                                    id="VisitType"
+                                    name="visitType"
+                                    id="visitType"
                                     aria-label="Default select example"
                                     ref={register()}
                                 >
                                     <option></option>
                                     {/* {employeeType?.map((e: employeeType, i: number) => {
-                                        return (
-                                            <option key={i} value={e?.id}>
-                                                {e?.type}
-                                            </option>
-                                        );
-                                    })} */}
+                                    return (
+                                        <option key={i} value={e?.id}>
+                                            {e?.type}
+                                        </option>
+                                    );
+                                })} */}
                                 </select>
                                 <span className="text-danger">
                                     {errors.VisitType && <span>This field is required.</span>}
@@ -276,8 +291,9 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                     Purpose
                                 </label>
                                 <textarea
-                                    name="Purpose"
-                                    id="Purpose"
+                                    defaultValue={visitor?.purpose}
+                                    name="purpose"
+                                    id="purpose"
                                     className="form-control"
                                     rows={4}
                                     ref={register()}
@@ -289,8 +305,9 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
                                     Remark
                                 </label>
                                 <textarea
-                                    name="Remarks"
-                                    id="Remarks"
+                                    defaultValue={visitor?.remarks}
+                                    name="remarks"
+                                    id="remarks"
                                     className="form-control"
                                     rows={4}
                                     ref={register()}
@@ -323,4 +340,4 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
     )
 }
 
-export default AddVisitor
+export default EditVisitor

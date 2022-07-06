@@ -1,6 +1,9 @@
 
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using Protocol_API.BackgroundServices;
 using Protocol_API.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,27 +24,32 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         ValidAudience = builder.Configuration["Jwt:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
                     };
-
                 });
+
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Protocol_DB")));
 
-builder.Services.AddCors(config => config.AddDefaultPolicy(c => c.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
-
+//builder.Services.AddCors(config => config.AddDefaultPolicy(c => c.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<JwtResolver>();
 builder.Services.AddScoped<Logger>();
 
 builder.Services.AddControllers(c =>
 {
-    var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
+    //var policy = new AuthorizationPolicyBuilder()
+    //                .RequireAuthenticatedUser()
+    //                .Build();
 
-   // c.Filters.Add(new AuthorizeFilter(policy));
+    //c.Filters.Add(new AuthorizeFilter(policy));
 
     c.ModelBinderProviders.Insert(0, new PagingOptionsBinderProvider());
 }).AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); ;
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddSignalR();  
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+//builder.Services.AddHostedService<TestServices>();
+
 
 var app = builder.Build();
 
@@ -60,9 +68,10 @@ app.UseCors(options =>
              .AllowAnyMethod()
              .AllowAnyHeader()
              .AllowCredentials());
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<Hubs>(pattern: "/signalr");
 
 app.Run();

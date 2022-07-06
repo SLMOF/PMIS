@@ -3,6 +3,8 @@ import { FiAirplay, FiBriefcase, FiPlusSquare, FiUsers } from 'react-icons/fi'
 import { NavLink, useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import jwt_decode from "jwt-decode";
+import { Token } from '@models';
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -21,6 +23,9 @@ const Sidebar = () => {
     //     })
     // }
 
+    const token = JSON.parse(localStorage.getItem('token') ?? '');
+    const decoded: Token = jwt_decode(token);
+    const role = decoded.roleName;
     return (
         <div className="sidebar-wrapper sidebar-theme">
             <nav id="sidebar">
@@ -46,7 +51,7 @@ const Sidebar = () => {
                         </a>
                         <ul className="collapse submenu list-unstyled" id="user" data-parent="#accordionExample">
                             <li>
-                                <NavLink to="/visitor/new"> Add Visitor </NavLink>
+                                {role === "Admin" ? <NavLink to="/visitor/new"> Add Visitor </NavLink> : <NavLink to="/visitor/newPop"> Add Visitor </NavLink>}
                             </li>
                             <li>
                                 <NavLink to="/visitor/list"> Visitors List </NavLink>
