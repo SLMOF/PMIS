@@ -31,7 +31,7 @@ const AddVisitor: React.FC<Props> = ({ owner, callback }) => {
         visitor.phone = data.phone;
         visitor.purpose = data.Purpose;
         visitor.gender = data.gender;
-        visitor.visitorDate = new Date().toISOString();
+        visitor.visitorDate = data.visitorDate;
         visitor.from = data.from;
         visitor.nationalId = data.nationalId;
         visitor.visitType = data.VisitType

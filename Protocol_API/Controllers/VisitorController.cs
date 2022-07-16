@@ -44,7 +44,7 @@ namespace Protocol_API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> PostVisitor(Visitor visitor)
+        public async Task<ActionResult> PostVisitor(CreateVisitorDTOs visitor)
         {
             if (visitor == null)
             {
@@ -62,6 +62,8 @@ namespace Protocol_API.Controllers
                 MeetingOffice = visitor.MeetingOffice,
                 Purpose = visitor.Purpose,
                 Phone = visitor.Phone,  
+                Status = visitor.Status.ToString(),
+                VisitorCard = visitor.VisitorCard,
                 Remarks = visitor.Remarks, 
                 VisitorDate = visitor.VisitorDate,
                 Gender = visitor.Gender,
@@ -75,29 +77,33 @@ namespace Protocol_API.Controllers
         }
 
         [HttpPut("{Id}")]
-        public async Task<ActionResult> UpdateVisitor(int Id, Visitor visitor)
+        public async Task<ActionResult> UpdateVisitor(int Id, CreateVisitorDTOs visitor)
         {
             var updatingVisotor = await _context.Visitors.FirstOrDefaultAsync(v => v.Id == Id);
 
             if (updatingVisotor != null)
             {
+                updatingVisotor.ExpectedDuration = visitor.ExpectedDuration;
+                updatingVisotor.DepartmentId = visitor.DepartmentId;
                 updatingVisotor.FullName = visitor.FullName;
                 updatingVisotor.From = visitor.From;
                 updatingVisotor.Host = visitor.Host;
-                updatingVisotor.Host = visitor.Host;
+                updatingVisotor.ImageURL = visitor.ImageURL;
+                updatingVisotor.MeetingOffice = visitor.MeetingOffice;
+                updatingVisotor.Purpose = visitor.Purpose;
+                updatingVisotor.Phone = visitor.Phone;
+                updatingVisotor.Status = visitor.Status.ToString();
+                updatingVisotor.VisitorCard = visitor.VisitorCard;
                 updatingVisotor.Remarks = visitor.Remarks;
+                updatingVisotor.VisitorDate = visitor.VisitorDate;
+                updatingVisotor.Gender = visitor.Gender;
                 updatingVisotor.NationalId = visitor.NationalId;
                 updatingVisotor.PersonAccompanying = visitor.PersonAccompanying;
                 updatingVisotor.VisitType = visitor.VisitType;
-                updatingVisotor.Gender = visitor.Gender;
-                updatingVisotor.Purpose = visitor.Purpose;
-                updatingVisotor.MeetingOffice = visitor.MeetingOffice;
-                updatingVisotor.ImageURL = visitor.ImageURL;
-                updatingVisotor.DepartmentId = visitor.DepartmentId;
 
                 await _context.SaveChangesAsync();  
             }
-            return Ok();
+            return Ok(updatingVisotor);
         }
 
         [HttpPut("delete/{Id}")]

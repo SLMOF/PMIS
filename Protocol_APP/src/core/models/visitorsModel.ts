@@ -17,6 +17,7 @@ export class VisitorsModel extends BaseModel {
   visitorCard?: string = "";
   visitorDate: Date;
   imageURL?: string = "";
+  status?: string = "";
   departmentId?: number;
   department?: DepartmentModel;
 }

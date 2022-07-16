@@ -1,5 +1,5 @@
 import { ENDPIONTS, httpService } from '@api';
-import { MyContainer } from '@components';
+import { Actions, MyContainer } from '@components';
 import { VisitorsModel } from '@models'
 import { Action, ComplexHeader, Table } from '@shared';
 import React, { useCallback, useEffect, useState } from 'react'
@@ -37,17 +37,29 @@ const VisitorList = () => {
         });
     };
 
+    const onActionsClickHandler = (e: VisitorsModel) => {
+        //  navigate('/taxpayers/edit', {state:t});
+        MySwal.fire({
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            showCloseButton: true,
+            width: "50%",
+            html: <Actions visitor={e} callback={fetchVisitors} />,
+        });
+    };
+
     const headers: ComplexHeader[] = [
         { key: "fullName", title: "Name" },
         { key: "phone", title: "Phone" },
         { key: "host", title: "Host" },
-        { key: "visitorDate", title: "Visiting Date", format: "date" },
+        { key: "visitorDate", title: "Visiting Date", format: "dateTime" },
         { key: "purpose", title: "Purpose" },
+        { key: "status", title: "Status" },
         // { key: "From?", title: "From" },
         // { key: "NationalId", title: "National ID" },
         // { key: "VisitType", title: "Visit Type" },
         // { key: "NationalId", title: "National ID" },
-        { key: "expectedDuration", title: "Expected Duration" },
+        { key: "expectedDuration", title: " Duration" },
         // { key: "MeetingOffice", title: "Meeting Office" },
         // { key: "PersonAccompanying", title: "PersonAccompanying" },
         // { key: "Remarks", title: "Remarks" },
@@ -72,6 +84,14 @@ const VisitorList = () => {
             },
             title: "Edit",
             color: "warning",
+        },
+        {
+            key: "3",
+            click: (e: VisitorsModel) => {
+                onActionsClickHandler(e);
+            },
+            title: "Actions",
+            color: "info",
         },
     ];
 

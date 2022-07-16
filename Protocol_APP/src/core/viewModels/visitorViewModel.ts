@@ -12,7 +12,7 @@ export class VisitorsViewModel {
   gender: string = "";
   phone: string = "";
   visitorCard?: string = "";
-  visitorDate: string = "";
+  visitorDate: Date;
   imageURL?: string = "";
   departmentId?: number;
 }

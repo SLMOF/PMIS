@@ -9,7 +9,17 @@ using Protocol_API.Filters;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddCors(config => config.AddDefaultPolicy(c => c.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+//builder.Services.AddCors(config => config.AddDefaultPolicy(c => c.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ClientPermission", policy =>
+    {
+        policy.AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithOrigins("http://localhost:3000")
+            .AllowCredentials();
+    });
+});
 //Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -48,7 +58,7 @@ builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//builder.Services.AddHostedService<TestServices>();
+builder.Services.AddHostedService<TestServices>();
 
 
 var app = builder.Build();
@@ -63,15 +73,11 @@ app.ConfigureExceptionHandler(app.Environment.IsDevelopment());
 
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseCors(options =>
-             options.WithOrigins("http://localhost:3000")
-             .AllowAnyMethod()
-             .AllowAnyHeader()
-             .AllowCredentials());
+app.UseCors("ClientPermission");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<Hubs>(pattern: "/signalr");
+app.MapHub<Hubs>(pattern: "/chathub");
 
 app.Run();

@@ -33,9 +33,12 @@
         public string ExpectedDuration { get; set; }
         public string? Gender { get; set; }
         public string MeetingOffice { get; set; }
+        public VisitorStatus? Status { get; set; } = VisitorStatus.Pending;
         public string PersonAccompanying { get; set; }
         public string Purpose { get; set; }
         public string? Remarks { get; set; }
+        public string? VisitorCard { get; set; }
+        public string Phone { get; set; }
         public string? ImageURL { get; set; }
         public int? DepartmentId { get; set; }
     }
